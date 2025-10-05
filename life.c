@@ -1,20 +1,24 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
+#define SIZE 86
 
-int (*init_matrix())[10] {
-    static int arr[10][10];
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            arr[i][j] = 0;
+int (*init_matrix(int density))[SIZE] {
+    static int arr[SIZE][SIZE];
+    srand(time(NULL));
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            arr[i][j] = (rand() % 100 < density) ? 1 : 0;
         }
     }
     return arr;
 }
 
-void print_matrix(int (*matrix)[10]) {
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
+void print_matrix(int (*matrix)[SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
             printf(matrix[i][j] ? "■ " : "  ");
         }
         printf("\n");
@@ -22,12 +26,12 @@ void print_matrix(int (*matrix)[10]) {
 }
 
 int frame_check(int x) {
-    if (x == 10) return 0;
-    if (x == -1) return 9;
+    if (x == SIZE) return 0;
+    if (x == -1) return SIZE - 1;
     return x;
 }
 
-bool live_or_die(int x, int y, int matrix[10][10]) {
+bool live_or_die(int x, int y, int matrix[SIZE][SIZE]) {
     int counter = 0;
     
     if (matrix[frame_check(x + 1)][frame_check(y + 1)]) counter++;
@@ -52,42 +56,24 @@ bool live_or_die(int x, int y, int matrix[10][10]) {
     }
 }
 
-void update_matrix(int matrix[10][10]) {
-    int temp[10][10];
+void update_matrix(int matrix[SIZE][SIZE]) {
+    int temp[SIZE][SIZE];
     
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < SIZE; x++) {
+        for (int y = 0; y < SIZE; y++) {
             temp[x][y] = live_or_die(x, y, matrix);
         }
     }
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < SIZE; x++) {
+        for (int y = 0; y < SIZE; y++) {
             matrix[x][y] = temp[x][y];
         }
     }
 }
 
-//bool check_life(matrix[10][10]) {
-//    
-//}
-
-
-int main() {
-//    int (*matrix)[10] = init_matrix();
+void start_life(int density) {
+    int (*matrix)[SIZE] = init_matrix(density);
     int gen = 1;
-    int matrix[10][10] = {
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-                  {0, 0, 1, 1, 1, 1, 0, 0, 0, 0},
-                  {0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-                  };
-//    printf("%d\n", (live_or_die(9, 0, matrix)) ? 1 : 0);
     while (1) {
         printf("\033[3;1H");
         print_matrix(matrix);
@@ -95,5 +81,14 @@ int main() {
         printf("%d\n", gen++);
         usleep(100000);
     }
+}
+
+
+int main() {
+    int density;
+    printf("Density in percent: ");
+    if (scanf("%d", &density) != 1)
+        density = 15;
+    start_life(density);
     return 0;
     }
